@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adventure Friday Batch Phone</title>
+<style>
+  :root {
+    --bg: #f3eee4;
+    --panel: rgba(255, 251, 246, 0.95);
+    --ink: #141414;
+    --muted: #665f58;
+    --line: #d9cfbf;
+    --accent: #f59d0c;
+    --done: #237d47;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f2ede3 0%, #ece5d8 100%);
+    color: var(--ink);
+    font-family: Helvetica, Arial, sans-serif;
+    padding: 14px;
+  }
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    display: grid;
+    gap: 12px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 22px;
+    padding: 16px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.10);
+  }
+  .topline {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .street-id {
+    margin-top: 8px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  .street-name {
+    margin-top: 6px;
+    font-size: clamp(34px, 8vw, 64px);
+    line-height: 0.96;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+  }
+  .meta {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .button-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  button {
+    border: 0;
+    border-radius: 999px;
+    min-height: 54px;
+    padding: 12px 16px;
+    font: inherit;
+    font-size: 18px;
+    cursor: pointer;
+    background: #171717;
+    color: #ffffff;
+  }
+  button.secondary {
+    background: #ece4d7;
+    color: #171717;
+  }
+  button.done {
+    background: var(--done);
+    color: #ffffff;
+  }
+  img {
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: #ffffff;
+  }
+  .image-meta {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.4;
+    text-align: center;
+  }
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .status-pill {
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 12px;
+    text-align: center;
+    background: rgba(255,255,255,0.7);
+    font-size: 14px;
+  }
+  .status-pill strong {
+    display: block;
+    font-size: 20px;
+    margin-top: 4px;
+  }
+  .title-mode {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: #fffdf9;
+    color: #111111;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .title-mode.open {
+    display: flex;
+  }
+  .title-copy {
+    max-width: 900px;
+  }
+  .title-copy .code {
+    font-size: clamp(28px, 6vw, 56px);
+    letter-spacing: 0.06em;
+    font-weight: 700;
+  }
+  .title-copy .name {
+    margin-top: 12px;
+    font-size: clamp(52px, 11vw, 120px);
+    line-height: 0.95;
+    font-weight: 800;
+  }
+  .title-copy .sub {
+    margin-top: 18px;
+    font-size: clamp(18px, 3vw, 32px);
+    color: #5f5851;
+  }
+  .title-copy .direction {
+    margin-top: 18px;
+    font-size: clamp(42px, 9vw, 88px);
+    line-height: 0.95;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel">
+      <div class="topline" id="topline">Friday batch phone helper</div>
+      <div class="street-id" id="street-id">-</div>
+      <div class="street-name" id="street-name">-</div>
+      <div class="meta" id="street-meta">-</div>
+    </section>
+
+    <section class="panel">
+      <div class="button-row">
+        <button class="secondary" id="prev-button" type="button">Previous</button>
+        <button class="secondary" id="next-button" type="button">Next</button>
+      </div>
+      <div class="button-row" style="margin-top:10px;">
+        <button id="title-12-button" type="button">Title 1-2</button>
+        <button id="title-21-button" type="button">Title 2-1</button>
+      </div>
+      <div class="button-row" style="margin-top:10px;">
+        <button class="secondary" id="reset-button" type="button">Reset this street</button>
+        <button class="secondary" id="complete-button" type="button">Mark complete</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="status-grid">
+        <div class="status-pill">1-2<strong id="dir12-status">No</strong></div>
+        <div class="status-pill">2-1<strong id="dir21-status">No</strong></div>
+        <div class="status-pill">Klaar<strong id="klaar-status">No</strong></div>
+      </div>
+      <div class="button-row" style="margin-top:10px;">
+        <button id="dir12-button" type="button">Mark 1-2</button>
+        <button id="dir21-button" type="button">Mark 2-1</button>
+      </div>
+      <div class="button-row" style="margin-top:10px;">
+        <button class="secondary" id="clear-all-button" type="button">Reset to today</button>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <img id="street-image" alt="Street reference">
+      <div class="image-meta" id="image-meta">1: - · 2: -</div>
+    </section>
+  </div>
+
+  <div class="title-mode" id="title-mode">
+    <div class="title-copy">
+      <div class="code" id="title-code">-</div>
+      <div class="name" id="title-name">-</div>
+      <div class="direction" id="title-direction">1-2</div>
+      <div class="sub" id="title-sub">Tap anywhere to close</div>
+    </div>
+  </div>
+
+<script src="adventure-friday-batch-phone-streets.js"></script>
+<script src="adventure-all-reference-assets.js"></script>
+<script>
+const STORAGE_KEY = 'adventure-friday-full-filming-order-v1';
+const BASE_STREETS = window.ADVENTURE_FRIDAY_BATCH_PHONE_STREETS || [];
+const FILMING_ORDER_IDS = [
+  "025", "126", "069", "071", "090", "076", "075", "056", "073", "074",
+  "003", "086", "009", "018", "088", "089", "027", "068", "005", "008",
+  "099", "064", "124", "063", "057", "107", "070", "110", "011", "010",
+  "052", "091", "084", "105", "043", "109", "045", "060B", "061", "060A",
+  "050", "023", "033", "102", "117", "040", "029", "118", "115", "034",
+  "012", "024", "081", "015", "030", "047", "121", "066", "120", "101",
+  "001", "125", "048", "097", "049", "082", "038", "085", "072", "092",
+  "094", "100", "019", "058", "013", "095", "080", "077", "021", "054",
+  "116", "122", "078", "031A", "026", "067", "031B", "036", "006", "106",
+  "017", "002", "044", "083", "123", "098", "093", "028", "108", "032",
+  "065", "016", "046", "004", "053", "087", "113", "039", "055", "079",
+  "059", "035", "042", "037", "104", "051", "007", "020", "096", "127",
+  "062", "119", "112", "111", "022", "103", "014", "041", "114"
+];
+const DEFAULT_FILMED_STREET_IDS = [
+  "025", "126", "069", "071", "090", "076", "075", "056", "073", "074",
+  "003", "086", "009", "018", "088", "089", "027", "068", "005", "008",
+  "099", "064", "124", "063"
+];
+const ORIGINAL_PHONE_BATCH_IDS = FILMING_ORDER_IDS.slice(0, 30);
+const MAP_REFERENCE_ASSETS = window.ALL_STREET_REFERENCE_ASSETS || {};
+
+if (!BASE_STREETS.length) {
+  throw new Error('Street data failed to load.');
+}
+
+const streetLookup = new Map(
+  BASE_STREETS.map(street => [String(street.id || '').toUpperCase(), street])
+);
+
+const missingStreetIds = FILMING_ORDER_IDS.filter(streetId => !streetLookup.has(streetId));
+if (missingStreetIds.length) {
+  throw new Error(`Street data missing for: ${missingStreetIds.join(', ')}`);
+}
+
+const STREETS = FILMING_ORDER_IDS.map((streetId, index) => {
+  const street = streetLookup.get(streetId);
+  return {
+    ...street,
+    order: index + 1,
+    section: buildSectionLabel(streetId, index)
+  };
+});
+
+const ui = {
+  topline: document.getElementById('topline'),
+  streetId: document.getElementById('street-id'),
+  streetName: document.getElementById('street-name'),
+  streetMeta: document.getElementById('street-meta'),
+  streetImage: document.getElementById('street-image'),
+  imageMeta: document.getElementById('image-meta'),
+  dir12Status: document.getElementById('dir12-status'),
+  dir21Status: document.getElementById('dir21-status'),
+  klaarStatus: document.getElementById('klaar-status'),
+  prevButton: document.getElementById('prev-button'),
+  nextButton: document.getElementById('next-button'),
+  title12Button: document.getElementById('title-12-button'),
+  title21Button: document.getElementById('title-21-button'),
+  resetButton: document.getElementById('reset-button'),
+  dir12Button: document.getElementById('dir12-button'),
+  dir21Button: document.getElementById('dir21-button'),
+  completeButton: document.getElementById('complete-button'),
+  clearAllButton: document.getElementById('clear-all-button'),
+  titleMode: document.getElementById('title-mode'),
+  titleCode: document.getElementById('title-code'),
+  titleName: document.getElementById('title-name'),
+  titleDirection: document.getElementById('title-direction'),
+  titleSub: document.getElementById('title-sub')
+};
+
+const state = {
+  index: 0,
+  progress: loadProgress()
+};
+
+state.index = findFirstIncompleteIndex();
+
+bind();
+render();
+
+function bind() {
+  ui.prevButton.addEventListener('click', () => {
+    state.index = Math.max(0, state.index - 1);
+    render();
+  });
+  ui.nextButton.addEventListener('click', () => {
+    state.index = Math.min(STREETS.length - 1, state.index + 1);
+    render();
+  });
+  ui.title12Button.addEventListener('click', () => openTitleMode('1-2'));
+  ui.title21Button.addEventListener('click', () => openTitleMode('2-1'));
+  ui.titleMode.addEventListener('click', closeTitleMode);
+  ui.dir12Button.addEventListener('click', () => toggleField('dir12'));
+  ui.dir21Button.addEventListener('click', () => toggleField('dir21'));
+  ui.completeButton.addEventListener('click', markComplete);
+  ui.resetButton.addEventListener('click', resetCurrentStreet);
+  ui.clearAllButton.addEventListener('click', () => {
+    state.progress = buildDefaultProgress();
+    persist();
+    state.index = findFirstIncompleteIndex();
+    render();
+  });
+}
+
+function buildSectionLabel(streetId, index) {
+  if (DEFAULT_FILMED_STREET_IDS.includes(streetId)) {
+    return 'Already filmed today';
+  }
+  if (ORIGINAL_PHONE_BATCH_IDS.includes(streetId)) {
+    return 'Original phone batch next';
+  }
+  return 'Full filming continuation';
+}
+
+function buildDefaultProgress() {
+  const progress = {};
+  DEFAULT_FILMED_STREET_IDS.forEach(streetId => {
+    progress[streetId] = { dir12: true, dir21: true, complete: true };
+  });
+  return progress;
+}
+
+function loadProgress() {
+  const seeded = buildDefaultProgress();
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return {
+      ...seeded,
+      ...(saved.progress || {})
+    };
+  } catch (error) {
+    return seeded;
+  }
+}
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    saved_at: new Date().toISOString(),
+    progress: state.progress
+  }));
+}
+
+function getCurrentStreet() {
+  return STREETS[state.index];
+}
+
+function getStreetState(streetId) {
+  return state.progress[streetId] || { dir12: false, dir21: false, complete: false };
+}
+
+function findFirstIncompleteIndex() {
+  const nextIndex = STREETS.findIndex(street => !getStreetState(street.id).complete);
+  return nextIndex >= 0 ? nextIndex : Math.max(0, STREETS.length - 1);
+}
+
+function setStreetState(streetId, value) {
+  state.progress[streetId] = value;
+  persist();
+}
+
+function toggleField(field) {
+  const street = getCurrentStreet();
+  const current = getStreetState(street.id);
+  current[field] = !current[field];
+  current.complete = current.dir12 && current.dir21;
+  setStreetState(street.id, current);
+  render();
+}
+
+function markComplete() {
+  const street = getCurrentStreet();
+  setStreetState(street.id, { dir12: true, dir21: true, complete: true });
+  render();
+}
+
+function resetCurrentStreet() {
+  const street = getCurrentStreet();
+  setStreetState(street.id, { dir12: false, dir21: false, complete: false });
+  render();
+}
+
+function render() {
+  const street = getCurrentStreet();
+  const progress = getStreetState(street.id);
+  const doneCount = Object.values(state.progress).filter(item => item && item.complete).length;
+
+  ui.topline.textContent = `Street ${street.order} of ${STREETS.length} · ${street.section} · ${doneCount}/${STREETS.length} complete`;
+  ui.streetId.textContent = street.id;
+  ui.streetName.textContent = street.name;
+  ui.streetMeta.textContent = `${street.one_way_m} m one way · ${street.roundtrip_m} m roundtrip · 2 videos`;
+  ui.streetImage.src = resolveReferenceSrc(street);
+  ui.streetImage.alt = `${street.name} map reference`;
+  ui.imageMeta.textContent = `1: ${street.point1_label} · 2: ${street.point2_label}`;
+
+  ui.dir12Status.textContent = progress.dir12 ? 'Yes' : 'No';
+  ui.dir21Status.textContent = progress.dir21 ? 'Yes' : 'No';
+  ui.klaarStatus.textContent = progress.complete ? 'Yes' : 'No';
+
+  ui.dir12Button.className = progress.dir12 ? 'done' : '';
+  ui.dir21Button.className = progress.dir21 ? 'done' : '';
+  ui.completeButton.className = progress.complete ? 'done' : '';
+
+  ui.prevButton.disabled = state.index === 0;
+  ui.nextButton.disabled = state.index === STREETS.length - 1;
+}
+
+function openTitleMode(direction) {
+  const street = getCurrentStreet();
+  ui.titleCode.textContent = street.id;
+  ui.titleName.textContent = street.name;
+  ui.titleDirection.textContent = direction;
+  ui.titleSub.textContent = direction === '2-1'
+    ? `2: ${street.point2_label} · 1: ${street.point1_label}`
+    : `1: ${street.point1_label} · 2: ${street.point2_label}`;
+  ui.titleMode.classList.add('open');
+}
+
+function closeTitleMode() {
+  ui.titleMode.classList.remove('open');
+}
+
+function resolveReferenceSrc(street) {
+  const inlineValue = String(street.reference_inline_src || '').trim();
+  if (inlineValue) {
+    return inlineValue;
+  }
+  const mapAsset = MAP_REFERENCE_ASSETS[String(street.id || '').toUpperCase()];
+  if (mapAsset) {
+    return mapAsset;
+  }
+  const rawValue = String(street.reference_src || '').trim();
+  if (!rawValue) {
+    return '';
+  }
+  if (/^(data:|https?:|blob:)/i.test(rawValue)) {
+    return rawValue;
+  }
+  const normalized = rawValue.replace(/\\/g, '/');
+  const fileName = normalized.split('/').pop();
+  if (!fileName) {
+    return normalized;
+  }
+  return `adventure-friday-batch-phone-site/screenshots/${fileName}`;
+}
+</script>
+</body>
+</html>
